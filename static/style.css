@@ -1,0 +1,306 @@
+/* Global Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+/* Enhanced background for the index page */
+/* Background layout */
+.index-background {
+    background: linear-gradient(135deg, #fbc2eb, #a6c1ee);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 80px 20px;
+}
+
+/* Square Button Styles */
+.square-btn {
+    width: 250px;
+    height: 250px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    color: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+    text-align: center;
+    padding: 30px 20px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 6px 15px rgba(0, 123, 255, 0.2);
+}
+
+.square-btn i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.square-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(0, 123, 255, 0.3);
+}
+
+/* Outline variation */
+.square-btn.outline {
+    background: white;
+    color: #007bff;
+    border: 2px solid #007bff;
+}
+
+.square-btn.outline:hover {
+    background: #007bff;
+    color: white;
+}
+
+/* Buttons stacked nicely */
+.button-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+}
+
+/* Bigger image styling */
+.home-image {
+    max-width: 100%;
+    max-height: 500px;
+    border-radius: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    transition: transform 0.4s ease;
+}
+
+.home-image:hover {
+    transform: scale(1.03);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .square-btn {
+        width: 200px;
+        height: 200px;
+        font-size: 1rem;
+    }
+
+    .home-image {
+        max-height: 300px;
+    }
+
+    .index-background {
+        padding: 60px 20px;
+    }
+}
+
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+    scroll-behavior: smooth;
+}
+
+/* Navbar */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #ffd700 !important;
+}
+
+/* Hero Section - Home Page */
+.hero-section {
+    padding: 80px 0;
+    background: linear-gradient(135deg, #007bff, #6f42c1);
+    color: white;
+    border-radius: 0 0 30px 30px;
+}
+
+.hero-section h1 {
+    font-weight: 700;
+}
+
+.hero-section p {
+    font-size: 1.1rem;
+}
+
+.hero-section img {
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+    max-height: 350px;
+}
+
+.hero-section img:hover {
+    transform: scale(1.05);
+}
+
+/* Square Buttons */
+.square-btn {
+    width: 200px;
+    height: 200px;
+    border-radius: 25px;
+    text-align: center;
+    font-weight: 600;
+    padding: 20px;
+    color: white;
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+    text-decoration: none;
+}
+
+.square-btn:hover {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 10px 25px rgba(0, 123, 255, 0.4);
+}
+
+.square-btn.outline {
+    background: white;
+    color: #007bff;
+    border: 2px solid #007bff;
+}
+
+.square-btn.outline:hover {
+    background: #007bff;
+    color: white;
+}
+
+.square-btn i {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* Form Styles */
+.card form label {
+    font-weight: 600;
+}
+
+.form-control,
+.form-select {
+    border-radius: 10px;
+    box-shadow: none;
+    transition: border 0.3s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+}
+
+/* Cards */
+.stats-card,
+.dashboard-card {
+    border-radius: 20px;
+    padding: 1rem;
+    transition: transform 0.3s;
+}
+
+.stats-card:hover,
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+
+.stats-card {
+    background: linear-gradient(to right, #f093fb, #f5576c);
+    color: white;
+    box-shadow: 0 6px 15px rgba(245, 87, 108, 0.3);
+}
+
+.dashboard-card {
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Tables */
+.table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table thead th {
+    background-color: #343a40;
+    color: white;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: #f2f2f2;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+}
+
+/* Chart Container */
+canvas {
+    max-height: 300px;
+}
+
+/* Alerts */
+.alert {
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+/* Footer */
+footer {
+    background-color: #212529;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 50px;
+    border-top: 4px solid #007bff;
+}
+/* Background and layout */
+.index-background {
+    background: linear-gradient(135deg, #fbc2eb, #a6c1ee);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 60px 20px;
+}
+
+/* Button stack */
+.button-column {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Home image */
+.home-image {
+    max-height: 350px;
+    transition: transform 0.3s ease;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.home-image:hover {
+    transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .square-btn {
+        width: 160px;
+        height: 160px;
+    }
+
+    .hero-section img {
+        max-height: 250px;
+    }
+}
