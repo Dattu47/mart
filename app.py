@@ -1,17 +1,41 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from datetime import datetime
-import mysql.connector
+from supabase import create_client, Client
+import os
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key'
 
-def get_db_connection():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",
-        database="mart_db"
-    )
+# Helper to load .env file manually
+def load_dotenv():
+    if os.path.exists('.env'):
+        with open('.env', 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, val = line.split('=', 1)
+                    os.environ[key.strip()] = val.strip().strip('"').strip("'")
+
+load_dotenv()
+
+# Get Supabase configuration
+def get_supabase_config():
+    return {
+        'url': os.environ.get('SUPABASE_URL', ''),
+        'key': os.environ.get('SUPABASE_KEY', '')
+    }
+
+supabase_client = None
+
+def get_supabase_client():
+    global supabase_client
+    if supabase_client is None:
+        config = get_supabase_config()
+        if not config['url'] or not config['key']:
+            raise ValueError("Supabase URL and API Key are not configured.")
+        supabase_client = create_client(config['url'], config['key'])
+    return supabase_client
+
 
 @app.route('/')
 def index():
@@ -33,62 +57,98 @@ def submit_visitor():
             flash("All fields except comment are required!", "error")
             return redirect(url_for('form'))
 
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('''
-            INSERT INTO visitors (gender, age_group, comment, visit_date)
-            VALUES (%s, %s, %s, %s)
-        ''', (gender, age_group, comment, visit_date))
-        conn.commit()
-        conn.close()
+        client = get_supabase_client()
+        client.table("visitors").insert({
+            "gender": gender,
+            "age_group": age_group,
+            "comment": comment,
+            "visit_date": visit_date
+        }).execute()
 
         flash("Visitor data recorded successfully!", "success")
         return redirect(url_for('dashboard'))
 
     except Exception as e:
-        flash(f"Error: {str(e)}", "error")
+        flash(f"Database Error: {str(e)}", "error")
         return redirect(url_for('form'))
 
 @app.route('/dashboard')
 def dashboard():
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    try:
+        client = get_supabase_client()
+        response = client.table("visitors").select("*").order("visit_date", desc=True).order("created_at", desc=True).execute()
+        raw_visitors = response.data if response.data else []
 
-    cursor.execute("SELECT * FROM visitors ORDER BY visit_date DESC, created_at DESC")
-    visitors = cursor.fetchall()
+        # Convert list of dicts to list of tuples to keep template compatibility
+        visitors = []
+        for v in raw_visitors:
+            # In PostgreSQL/Supabase, created_at is returned as ISO-8601 string. 
+            # We can format it to be more readable in the table, e.g. YYYY-MM-DD HH:MM
+            created_at_raw = v.get('created_at', '')
+            created_at_str = created_at_raw
+            if created_at_raw and 'T' in created_at_raw:
+                try:
+                    # '2026-06-07T10:00:00+00:00' -> '2026-06-07 10:00'
+                    dt = datetime.fromisoformat(created_at_raw.replace('Z', '+00:00'))
+                    created_at_str = dt.strftime('%Y-%m-%d %H:%M')
+                except Exception:
+                    pass
+            visitors.append((
+                v.get('id'),
+                v.get('gender'),
+                v.get('age_group'),
+                v.get('comment'),
+                v.get('visit_date'),
+                created_at_str
+            ))
 
-    cursor.execute("SELECT COUNT(*) FROM visitors")
-    total_visits = cursor.fetchone()[0]
+        # Compute stats in Python
+        total_visits = len(raw_visitors)
+        
+        today_str = datetime.today().strftime('%Y-%m-%d')
+        today_visits = sum(1 for v in raw_visitors if v.get('visit_date') == today_str)
+        
+        male_visits = sum(1 for v in raw_visitors if v.get('gender') == 'Male')
+        female_visits = sum(1 for v in raw_visitors if v.get('gender') == 'Female')
 
-    cursor.execute("SELECT COUNT(*) FROM visitors WHERE visit_date = CURDATE()")
-    today_visits = cursor.fetchone()[0]
+        # Gender stats
+        gender_counts = {}
+        for v in raw_visitors:
+            g = v.get('gender')
+            if g:
+                gender_counts[g] = gender_counts.get(g, 0) + 1
+        gender_stats = list(gender_counts.items())
 
-    cursor.execute("SELECT COUNT(*) FROM visitors WHERE gender = 'Male'")
-    male_visits = cursor.fetchone()[0]
+        # Age stats
+        age_counts = {}
+        for v in raw_visitors:
+            a = v.get('age_group')
+            if a:
+                age_counts[a] = age_counts.get(a, 0) + 1
+        age_stats = list(age_counts.items())
 
-    cursor.execute("SELECT COUNT(*) FROM visitors WHERE gender = 'Female'")
-    female_visits = cursor.fetchone()[0]
+        # Date stats
+        date_counts = {}
+        for v in raw_visitors:
+            d = v.get('visit_date')
+            if d:
+                date_counts[d] = date_counts.get(d, 0) + 1
+        date_stats = sorted(list(date_counts.items()), key=lambda x: x[0])
 
-    cursor.execute("SELECT gender, COUNT(*) FROM visitors GROUP BY gender")
-    gender_stats = cursor.fetchall()
+        return render_template("dashboard.html",
+                               visitors=visitors,
+                               total_visits=total_visits,
+                               today_visits=today_visits,
+                               male_visits=male_visits,
+                               female_visits=female_visits,
+                               gender_stats=gender_stats,
+                               age_stats=age_stats,
+                               date_stats=date_stats)
+    except Exception as e:
+        flash(f"Database Error: {str(e)}", "error")
+        return redirect(url_for('index'))
 
-    cursor.execute("SELECT age_group, COUNT(*) FROM visitors GROUP BY age_group")
-    age_stats = cursor.fetchall()
-
-    cursor.execute("SELECT visit_date, COUNT(*) FROM visitors GROUP BY visit_date ORDER BY visit_date")
-    date_stats = cursor.fetchall()
-
-    conn.close()
-
-    return render_template("dashboard.html",
-                           visitors=visitors,
-                           total_visits=total_visits,
-                           today_visits=today_visits,
-                           male_visits=male_visits,
-                           female_visits=female_visits,
-                           gender_stats=gender_stats,
-                           age_stats=age_stats,
-                           date_stats=date_stats)
 
 if __name__ == '__main__':
     app.run(debug=True)
+
